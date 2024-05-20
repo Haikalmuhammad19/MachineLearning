@@ -1,0 +1,67 @@
+# Install necessary libraries
+!pip install pandas scikit-learn xgboost
+
+# Import libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import xgboost as xgb
+
+# Setting random seed for reproducibility
+np.random.seed(42)
+
+# Generating random scores
+data = {
+    'Quiz': np.random.randint(50, 100, size=40),
+    'Assignment': np.random.randint(50, 100, size=40),
+    'UTS': np.random.randint(50, 100, size=40),
+    'UAS': np.random.randint(50, 100, size=40)
+}
+
+# Creating a DataFrame
+df = pd.DataFrame(data)
+
+# Define a target passing score
+passing_score = 60
+
+# Create target variable (Pass=1, Fail=0)
+df['Target'] = np.where((df['Quiz'] >= passing_score) & 
+                        (df['Assignment'] >= passing_score) & 
+                        (df['UTS'] >= passing_score) & 
+                        (df['UAS'] >= passing_score), 1, 0)
+
+# Splitting the data
+X = df[['Quiz', 'Assignment', 'UTS', 'UAS']]
+y = df['Target']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Training the Random Forest model
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Making predictions with Random Forest
+rf_predictions = rf_model.predict(X_test)
+
+# Evaluating the Random Forest model
+rf_accuracy = accuracy_score(y_test, rf_predictions)
+print(f"Random Forest Accuracy: {rf_accuracy}")
+
+# Training the XGBoost model
+xgb_model = xgb.XGBClassifier(random_state=42)
+xgb_model.fit(X_train, y_train)
+
+# Making predictions with XGBoost
+xgb_predictions = xgb_model.predict(X_test)
+
+# Evaluating the XGBoost model
+xgb_accuracy = accuracy_score(y_test, xgb_predictions)
+print(f"XGBoost Accuracy: {xgb_accuracy}")
+
+# Compare models
+if rf_accuracy > xgb_accuracy:
+    print(f"The Random Forest model is better with an accuracy of {rf_accuracy}")
+else:
+    print(f"The XGBoost model is better with an accuracy of {xgb_accuracy}")
